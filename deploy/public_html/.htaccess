@@ -1,0 +1,2 @@
+RewriteEngine on
+RewriteRule !^include index.php

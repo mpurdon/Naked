@@ -1,0 +1,8 @@
+The Naked Framework
+====================
+
+The Naked Framework is a MVC based application framework designed to take
+advantage of the latest features in PHP. To use it, you must have at least PHP
+version 5.3.0 or higher installed.
+
+The framework is released under the MIT license.
