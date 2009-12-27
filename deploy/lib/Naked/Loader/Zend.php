@@ -27,7 +27,7 @@ class Zend extends Loader
     public static function registerAutoload()
     {
         if (!function_exists('spl_autoload_register')) {
-            throw new Exception('spl_autoload does not exist in this PHP installation');
+            throw new \RuntimeException('spl_autoload does not exist in this PHP installation');
         }
 
         spl_autoload_register(array('Naked\Loader\Zend', 'autoload'));
@@ -46,6 +46,10 @@ class Zend extends Loader
      */
     public static function loadClass($class)
     {
+        if (strlen($class) == 0) {
+            throw new \RuntimeException("You must specify a class name to load");
+        }
+
         // get class path from cache
         $cacheKey = 'class_path_cache::' . $class;
 
@@ -58,17 +62,16 @@ class Zend extends Loader
             if ((include($classPath))) {
                 return true;
             }
-        } else {
+        } else if ($classPath === false) {
             //echo " Miss<br>";
             $normalizedClass = str_replace('\\', DIRECTORY_SEPARATOR, $class);
             $classPath = self::getQualifiedPath($normalizedClass . '.php');
-            include($classPath);
-            if (class_exists($class) || interface_exists($class)) {
+            if((include($classPath)) && (class_exists($class) || interface_exists($class))) {
                 zend_shm_cache_store($cacheKey, $classPath, 3600);
                 return true;
             }
         }
 
-        throw new \RuntimeException("{$classPath} does not exist");
+        throw new \RuntimeException("File '{$classPath}' which should contain the class '{$class}' does not exist");
     }
 }

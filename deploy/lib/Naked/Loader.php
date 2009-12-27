@@ -69,13 +69,17 @@ class Loader
      */
     public static function loadClass($class)
     {
+        if (strlen($class) == 0) {
+            throw new \RuntimeException("You must specify a class name to load");
+        }
+
         $normalizedClass = str_replace('\\', DIRECTORY_SEPARATOR, $class);
         $classPath = $normalizedClass . '.php';
-        if(include($classPath)) {
+        if((include($classPath)) && (class_exists($class) || interface_exists($class))) {
             return true;
         }
 
-        throw new Exception("{$classPath} does not exist");
+        throw new \RuntimeException("File '{$classPath}' which should contain the class '{$class}' does not exist");
     }
 
     /**

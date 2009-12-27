@@ -27,7 +27,7 @@ class Apc extends Loader
     public static function registerAutoload()
     {
         if (!function_exists('spl_autoload_register')) {
-            throw new Exception('spl_autoload does not exist in this PHP installation');
+            throw new \RuntimeException('spl_autoload does not exist in this PHP installation');
         }
 
         spl_autoload_register(array('Naked\Loader\Apc', 'autoload'));
@@ -46,6 +46,10 @@ class Apc extends Loader
      */
     public static function loadClass($class)
     {
+        if (strlen($class) == 0) {
+            throw new \RuntimeException("You must specify a class name to load");
+        }
+
         // get class path from cache
         $cacheKey = 'class_path_cache::' . $class;
         $classPath = apc_fetch($cacheKey);
@@ -57,13 +61,12 @@ class Apc extends Loader
         } else {
             $normalizedClass = str_replace('\\', DIRECTORY_SEPARATOR, $class);
             $classPath = self::getQualifiedPath($normalizedClass . '.php');
-            include($classPath);
-            if (class_exists($class) || interface_exists($class)) {
+            if((include($classPath)) && (class_exists($class) || interface_exists($class))) {
                 apc_store($cacheKey, $classPath);
                 return true;
             }
         }
 
-        throw new \RuntimeException("{$classPath} does not exist");
+        throw new \RuntimeException("File '{$classPath}' which should contain the class '{$class}' does not exist");
     }
 }

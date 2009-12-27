@@ -61,7 +61,7 @@ class Dispatcher
         try {
             $response = $controller->$actionMethod();
             $this->hasDispatched = true;
-        } catch (Exception $e) {
+        } catch (RuntimeException $e) {
             echo "Caught an exception:<br>",$e->getMessage(),'<br>';
         }
 
