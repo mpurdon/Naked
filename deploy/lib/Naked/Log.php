@@ -33,7 +33,7 @@ class Log
      *
      * @param Naked\Log\LogWriter $writer
      */
-    public function addWriter(LogWriter $writer)
+    public function addWriter(\Naked\Log\Writer $writer)
     {
         $this->writers[] = $writer;
     }
@@ -71,32 +71,30 @@ class Log
     }
 
     /**
+     * Destructor
+     *
+     *  Ensure we flush the last log message before we die
+     */
+    public function __destruct()
+    {
+        $this->flushLastMessage();
+        unset($this);
+    }
+
+    /**
      * Send the last message to the writers
      */
     protected function flushLastMessage()
     {
-        $this->messages[$this->lastMessage];
-        if (!$message) {
+        if (!isset($this->messages[$this->lastMessage])) {
             return false;
         }
 
         foreach ($this->writers as $writer) {
-            $writer->write($message);
+            $writer->write($this->messages[$this->lastMessage]);
         }
 
         unset($this->messages[$this->lastMessage]);
         return true;
     }
-
-    /**
-     * Destructor
-     *
-     *  Ensure we flush the last log message
-     */
-    public function __destruct()
-    {
-        $this->flushLastMessages();
-        unset($this);
-    }
 }
-

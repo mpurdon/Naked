@@ -69,7 +69,7 @@ class Message
     {
         $string = $this->message;
         if ($this->count > 0) {
-            $string .= " (repeated {$this->count} times)";
+            $string .= " (repeated {$this->count} more times)";
         }
 
         return $string;

@@ -60,10 +60,13 @@ class Apc extends Loader
             }
         } else {
             $normalizedClass = str_replace('\\', DIRECTORY_SEPARATOR, $class);
-            $classPath = self::getQualifiedPath($normalizedClass . '.php');
-            if((include($classPath)) && (class_exists($class) || interface_exists($class))) {
-                apc_store($cacheKey, $classPath);
-                return true;
+            $classFileName = $normalizedClass . '.php';
+            $classPath = self::getQualifiedPath($classFileName);
+            if ($classPath) {
+                if((include($classPath)) && (class_exists($class) || interface_exists($class))) {
+                    apc_store($cacheKey, $classPath);
+                    return true;
+                }
             }
         }
 

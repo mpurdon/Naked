@@ -170,6 +170,9 @@ class FilterExpression
         return $this->token;
     }
 
+    // @todo These filters should be moved into a filter directory or something
+    // @todo How do end users extends the template filter expressions?
+
     /**
      * Apply a default value if the context variable is null
      *

@@ -9,7 +9,7 @@
 
  // @todo Cache annotations
  // @todo implement logging
- // @todo finish templating (inheritance)
+ // @todo finish templating (inheritance to layouts)
  // @todo implement caching
  // @todo implement database connection crap
  // @todo implement ORM modelling (Domain Models)
@@ -40,10 +40,10 @@ $di->set('Naked\Application\Environment', $environment);
 // Add the rest of the dependencies now that we know where to find them.
 $dependencyConfigLoader = new ConfigLoader($environment);
 $dependencyConfigLoader->load();
+$di->initLogging();
 unset($dependencyConfigLoader);
-
-//echo '<pre>',var_dump($di),'</pre>';
 
 // Now we get our application and run it
 $application = $di->get('Naked\Application');
-$application->run(new Request());
+$request = $di->get('Naked\Request');
+$application->run($request);

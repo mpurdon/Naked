@@ -13,6 +13,7 @@ use Naked\DI;
 use Naked\DI\Registry;
 use Naked\DI\Builder;
 use Naked\DI\Buildable;
+use Naked\Annotations;
 
 /**
  * Dependency Injection Container
@@ -32,9 +33,9 @@ class DI
     protected static $instance;
 
     /**
-     * @var array
+     * @var Naked\Annotations
      */
-    protected $config = array();
+    protected $annotations;
 
     /**
      * @var Naked\DI\Registry
@@ -47,11 +48,28 @@ class DI
     protected $builder;
 
     /**
+     * @var Naked\Log
+     */
+    protected $logger;
+
+    /**
      * Constructor
      */
-    protected function __construct($config=null)
+    protected function __construct()
     {
-        $this->config = $config;
+        $this->annotations = new Annotations();
+        $this->services = new Registry();
+        $this->set('Annotations', $this->annotations);
+        $this->builder = new Builder($this->annotations);
+        $this->logger = new \Naked\Log();
+    }
+
+    public function initLogging()
+    {
+        //echo "Initializing logger<br>";
+        $logger = $this->get('Naked\Log');
+        $this->logger = $logger;
+        $this->builder->setLogger($logger);
     }
 
     /**
@@ -75,10 +93,6 @@ class DI
      */
     protected function getServices()
     {
-        if (is_null($this->services)) {
-            $this->services = new Registry();
-        }
-
         return $this->services;
     }
 
@@ -89,11 +103,17 @@ class DI
      */
     protected function getBuilder()
     {
-        if (is_null($this->builder)) {
-            $this->builder = new Builder();
-        }
-
         return $this->builder;
+    }
+
+    /**
+     * Get the annotations
+     *
+     * @return Naked\Annotations
+     */
+    public function getAnnotations()
+    {
+        return $this->annotations;
     }
 
     /**
@@ -115,7 +135,7 @@ class DI
      */
     public function hasService($service, $context='default')
     {
-        //echo "Looking for service $service<br>";
+        $this->logger->log("*** Dependency Injection - Looking for service $service");
         if ($this->getServices()->has($service, $context)) {
             return self::SERVICE_IN_REGISTRY;
         }
@@ -154,7 +174,7 @@ class DI
             case self::SERVICE_NOT_FOUND:
                 // If we don't have a service for the specified service and we do not
                 // allow falling back to the default context, freak out.
-                //echo "No service $serviceName for that context. Checking if I should look in default: ",strcasecmp($context, 'default'),"<br>";
+                $this->logger->log("No service $serviceName for that context. Checking if I should look in default: " . strcasecmp($context, 'default'));
                 if (strcasecmp($context, 'default') != 0 && $fallBackToDefaultContext) {
                     // Try to get the job done with the default context
                     $service = $this->get($serviceName, 'default');
@@ -163,21 +183,61 @@ class DI
                 // We have no clue how to build this thing, let's just try it
                 // and hope we don't light the atmosphere on fire.
                 if (is_null($service)) {
-                    //echo "Could not build it using default context, trying to instantiate it<br>";
+                    $this->logger->log("Could not build it using default context, trying to instantiate it");
                     $service = $this->getBuilder()->getUsingSimpleInstantiation($serviceName, 'default');
                 }
 
                 break;
 
             case self::SERVICE_IN_REGISTRY:
-                //echo "Service $serviceName found in registry<br>";
+                $this->logger->log("Service $serviceName found in registry");
                 $service = $this->getServices()->get($serviceName, $context);
                 break;
 
             case self::SERVICE_IN_BUILDER:
-                //echo "Service $serviceName found in builder<br>";
+                $this->logger->log("Service $serviceName found in builder");
                 $service = $this->getBuilder()->get($serviceName, $context);
                 $this->getServices()->set($serviceName, $service, $context);
+                break;
+        }
+
+        return $service;
+    }
+
+    /**
+     * Create a service ignoring all of the registry junk
+     *
+     * @param string $serviceName
+     * @param string $context
+     * @param boolean $fallBackToDefaultContext
+     */
+    public function create($serviceName, $context='default', $fallBackToDefaultContext=false)
+    {
+        $service = null;
+        $serviceLocation = $this->hasService($serviceName, $context);
+
+        switch($serviceLocation) {
+            case self::SERVICE_NOT_FOUND:
+                // If we don't have a service for the specified service and we do not
+                // allow falling back to the default context, freak out.
+                $this->logger->log("No service $serviceName for that context. Checking if I should look in default: " . strcasecmp($context, 'default'));
+                if (strcasecmp($context, 'default') != 0 && $fallBackToDefaultContext) {
+                    // Try to get the job done with the default context
+                    $service = $this->create($serviceName, 'default');
+                }
+
+                // We have no clue how to build this thing, let's just try it
+                // and hope we don't light the atmosphere on fire.
+                if (is_null($service)) {
+                    $this->logger->log("Could not build it using default context, trying to instantiate it");
+                    $service = $this->getBuilder()->getUsingSimpleInstantiation($serviceName, 'default');
+                }
+
+                break;
+
+            case self::SERVICE_IN_BUILDER:
+                $this->logger->log("Service $serviceName found in builder");
+                $service = $this->getBuilder()->get($serviceName, $context);
                 break;
         }
 

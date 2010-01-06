@@ -25,7 +25,7 @@ class BasicRoute implements PathMatching
     protected $name;
     protected $pattern;
 
-    protected $module = 'default';
+    protected $module = 'index';
     protected $controller = 'index';
     protected $action = 'index';
     /**#@-*/

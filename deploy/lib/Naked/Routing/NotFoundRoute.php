@@ -24,7 +24,7 @@ class NotFoundRoute extends BasicRoute
     {
         parent::__construct('NotFound', '^$');
 
-        $this->setModule('default');
+        $this->setModule('index');
         $this->setController('error');
         $this->setAction('FourOhFour');
     }

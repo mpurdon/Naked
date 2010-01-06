@@ -28,7 +28,6 @@ class Application
      protected $environment;
 
      /**
-      *
       * @var Naked\Application\Configuration
       */
      protected $configuration;
@@ -83,7 +82,7 @@ class Application
      * @param Request $request
      * @return void
      */
-    public function run(Request $request)
+    public function run($request)
     {
         // Get the route we are going to dispatch
         $di = DI::container();
@@ -92,14 +91,16 @@ class Application
 
         // Dispatch the route we found otherwise send a 404 response
         try {
-            $dispatcher = new Dispatcher($this->environment);
+            $dispatcher = $di->get('Naked\Application\Dispatcher');
             if ($route) {
                 $dispatcher->dispatch($route, $request);
             } else {
-                $dispatcher->dispatch(new NotFoundRoute());
+                $dispatcher->dispatch(new NotFoundRoute(), $request);
             }
-        } catch (Exception $e) {
-            echo 'Caught Exception: ',$e->getMessage(),'<br>';
+        } catch (\RuntimeException $e) {
+            echo 'Caught Run Time Exception: ',$e->getMessage(),'<pre>',var_dump($e->getTraceAsString()),'<pre>';
+        } catch (\Exception $e) {
+            echo 'Caught Exception: ',$e->getMessage(),'<pre>',var_dump($e->getTraceAsString()),'<pre>';
         }
     }
 }

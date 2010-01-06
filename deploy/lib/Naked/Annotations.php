@@ -9,7 +9,8 @@
 
 namespace Naked;
 
-use Naked\Annotations\Annotation;
+use Naked\Annotations\Builder;
+use Naked\Annotations\Registry;
 
 /**
  * A class or method annotation
@@ -19,94 +20,42 @@ use Naked\Annotations\Annotation;
 class Annotations extends \ArrayObject
 {
     /**
+     * @var Naked\Annotations\Builder
+     */
+    protected $builder;
+
+    /**
+     * @var Naked\Annotations\Registry
+     */
+    protected $registry;
+
+    /**
      * Constructor
-     *
-     * @param string $docBlock
      */
-    public function __construct($docBlock=null)
+    public function __construct()
     {
-        if (!is_null($docBlock)) {
-            $this->parseDocBlock($docBlock);
-        }
+        $this->builder = new Builder();
+        $this->registry = new Registry();
     }
 
     /**
-     * Parse a doc block into annotations
+     * Get annotations for the provided class name
      *
-     * @param string $docBlock
+     * @param string $class
+     * @return Naked\Annotations
      */
-    public function parseDocBlock($docBlock)
+    public function forClass($class)
     {
-        //echo "Parsing doc block:<pre>$docBlock</pre>";
-        $annotationStrings = $this->getAnnotationStrings($docBlock);
-
-        foreach($annotationStrings as $annotationType => $annotationValue) {
-            if ($this->isAnnotationString($annotationType)) {
-                //echo "Creating new $annotationType annotation<br/>";
-                $annotation = new Annotation($annotationType, $annotationValue);
-                $this->append($annotation);
-            }
-        }
-    }
-
-    /**
-     * Split a string into blocks based on the @ character
-     *
-     * @return array
-     */
-    protected function getAnnotationStrings($docBlock)
-    {
-        $matches = array();
-
-        $strings = explode("\n", $docBlock);
-        if (count($strings) > 0) {
-            $regex = '#@(\S+)(.*)#';
-            foreach ($strings as $string) {
-                $match = false;
-                preg_match($regex, $string, $match);
-                if ($match) {
-                    $matches[$match[1]] = trim($match[2]);
-                }
+        if ($this->registry->has($class)) {
+            return $this->registry->get($class);
+        } else {
+            $annotations = $this->builder->get($class);
+            if ($annotations) {
+                $this->registry->set($class, $annotations);
+                return $annotations;
             }
         }
 
-        //echo "Found possible annotations<br>";
-        //echo '<pre>',var_dump($matches),'</pre>';
-
-        return $matches;
-    }
-
-    /**
-     * Determine if the passed in string contains an annotation
-     *
-     * @return boolean
-     */
-    protected function isAnnotationString($string)
-    {
-        //echo "Checking if '$string' is an annotation: ";
-        if (stripos($string, 'Inject') === 0) {
-            //echo "yes<br/>";
-            return true;
-        }
-
-        //echo "no<br/>";
-        return false;
-    }
-
-    /**
-     * Determine if the desired annotation exists in the children
-     *
-     * @param string $annotation
-     * @return boolean
-     */
-    public function has($type)
-    {
-        foreach($this->getIterator() as $annotation) {
-            if (strcasecmp($annotation->getType(),$type) == 0) {
-                return true;
-            }
-        }
-
-        return false;
+        throw new \RuntimeException("Could not get any annotations for class {$class}");
     }
 }

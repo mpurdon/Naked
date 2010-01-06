@@ -17,9 +17,15 @@ $di = DI::container();
 
 // Use specifications to describe the way in which an object should be built
 
-$controller = new Specification();
-$controller->build('Naked\Controller');
-$di->addBuildSpecification($controller);
+$cache = new Specification();
+$cache->build('Naked\Cache')
+      ->using('Naked\Cache\Memcached');
+$di->addBuildSpecification($cache);
+
+$querySetQuery = new Specification();
+$querySetQuery->build('Naked\Objects\Query')
+              ->using('Naked\Objects\Query\MySQL');
+$di->addBuildSpecification($querySetQuery);
 
 // Use lambda functions to describe the way in which an object should be built
 
@@ -45,23 +51,29 @@ $configFactory->build('Naked\Application\Configuration')
 $di->addBuildFactoryMethod($configFactory);
 
 // Logging
-$configFactory = new FactoryMethod();
-$configFactory->build('Log')
-              ->using(function () {
-                  echo "getting log<br>";
-                  exit();
-                    $environment = DI::container()->get('Naked\Application\Environment');
+$loggingFactory = new FactoryMethod();
+$loggingFactory->build('Naked\Log')
+               ->using(function () {
+                    $di = DI::container();
+                    $configuration = $di->get('Naked\Application\Configuration');
+
+                    if (!$configuration->logging) {
+                        return new \Naked\Log\BlackHole();
+                    }
+
                     $logger = new \Naked\Log();
-                    echo "I have the logger <br>";
-                    exit();
+                    $environment = $di->get('Naked\Application\Environment');
+
                     if ($environment->isDevelopment()) {
-                        $firebugWriter = new \Naked\Log\Writer\Firebug(\Naked\Log::DEBUG);
+                        $firebugWriter = new \Naked\Log\Writer\Firebug(LOG_DEBUG);
                         $logger->addWriter($firebugWriter);
                     } else {
-                        $syslogWriter = new \Naked\Log\Writer\Syslog(\Naked\Log::ERR);
+                        // @todo Should create a wackamole/spread logger
+                        $syslogWriter = new \Naked\Log\Writer\Syslog(LOG_CRIT);
                         $logger->addWriter($syslogWriter);
                     }
+
                     return $logger;
               });
 
-$di->addBuildFactoryMethod($configFactory);
+$di->addBuildFactoryMethod($loggingFactory);

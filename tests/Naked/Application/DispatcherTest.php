@@ -1,4 +1,5 @@
 <?php
+require_once 'deploy\lib\Naked\Application\Environment.php';
 require_once 'deploy\lib\Naked\Application\Dispatcher.php';
 require_once 'PHPUnit\Framework\TestCase.php';
 
@@ -19,7 +20,8 @@ class DispatcherTest extends PHPUnit_Framework_TestCase
     {
         parent::setUp();
         // TODO Auto-generated DispatcherTest::setUp()
-        $this->Dispatcher = new Naked\Application\Dispatcher(/* parameters */);
+        $environment = new Naked\Application\Environment();
+        $this->Dispatcher = new Naked\Application\Dispatcher($environment);
     }
 
     /**
@@ -46,7 +48,7 @@ class DispatcherTest extends PHPUnit_Framework_TestCase
     {
         // TODO Auto-generated DispatcherTest->testDispatch()
         $this->markTestIncomplete("dispatch test not implemented");
-        $this->Dispatcher->dispatch(/* parameters */);
+//        $this->Dispatcher->dispatch(/* parameters */);
     }
 
     /**

@@ -18,7 +18,7 @@ class DefaultRoute extends Route
     {
         parent::__construct('home', '$^');
 
-        $this->setModule('default');
+        $this->setModule('index');
         $this->setController('Index');
         $this->setAction('index');
     }

@@ -16,8 +16,8 @@ class EnvironmentTest extends PHPUnit_Framework_TestCase
     protected function setUp ()
     {
         parent::setUp();
-        // TODO Auto-generated EnvironmentTest::setUp()
-        $this->Environment = new Environment(/* parameters */);
+        putenv('ENVIRONMENT=development');
+        $this->Environment = new Naked\Application\Environment();
     }
     /**
      * Cleans up the environment after running a test.
@@ -32,25 +32,34 @@ class EnvironmentTest extends PHPUnit_Framework_TestCase
      * Constructs the test case.
      */
     public function __construct ()
-    {    // TODO Auto-generated constructor
-    }
+    {}
+
     /**
-     * Tests Environment->__construct()
+     * Tests Environment->verifyInstall()
      */
-    public function test__construct ()
+    public function testVerifyInstall ()
     {
-        // TODO Auto-generated EnvironmentTest->test__construct()
-        $this->markTestIncomplete("__construct test not implemented");
-        $this->Environment->__construct(/* parameters */);
-    }
-    /**
-     * Tests Environment->getRoutes()
-     */
-    public function testGetRoutes ()
-    {
-        // TODO Auto-generated EnvironmentTest->testGetRoutes()
-        $this->markTestIncomplete("getRoutes test not implemented");
-        $this->Environment->getRoutes(/* parameters */);
+        $environment = $_ENV['ENVIRONMENT'];
+
+        if ($environment) {
+            try {
+                $this->environment->verifyInstall();
+                $this->pass();
+            } catch (RuntimeException $e) {
+                $this->fail('Should not have thrown an exception on a set environment variable');
+            }
+        }
+
+        unset($_ENV['ENVIRONMENT']);
+
+        try {
+            $this->environment->verifyInstall();
+            $this->fail('Should have thrown an exception on a missing environment variable');
+        } catch (RuntimeException $e) {
+            $this->pass();
+        }
+
+        $_ENV['ENVIRONMENT'] = $environment;
     }
 }
 

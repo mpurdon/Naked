@@ -28,7 +28,7 @@ class Firebug implements Writer
     /**
      * @var Fire
      */
-    protected $firePHP;
+    protected $firePhp;
 
     /**
      * Constructor
@@ -38,7 +38,7 @@ class Firebug implements Writer
     public function __construct($logLevel)
     {
         $this->logLevel = $logLevel;
-        $this->firePHP = FirePHP::getInstance();
+        $this->firePhp = \FirePHP::getInstance(true);
     }
 
     /**
@@ -47,10 +47,10 @@ class Firebug implements Writer
      * @param Naked\Log\Message $message
      * @return boolean
      */
-    public function write(Naked\Log\Message $message)
+    public function write(\Naked\Log\Message $message)
     {
         if ($message->getPriority() <= $this->logLevel) {
-            return $this->firePHP->log((string)$message."\n");
+            return $this->firePhp->log((string)$message."\n");
         }
 
         return true;

@@ -65,10 +65,13 @@ class Zend extends Loader
         } else if ($classPath === false) {
             //echo " Miss<br>";
             $normalizedClass = str_replace('\\', DIRECTORY_SEPARATOR, $class);
-            $classPath = self::getQualifiedPath($normalizedClass . '.php');
-            if((include($classPath)) && (class_exists($class) || interface_exists($class))) {
-                zend_shm_cache_store($cacheKey, $classPath, 3600);
-                return true;
+            $classFileName = $normalizedClass . '.php';
+            $classPath = self::getQualifiedPath($classFileName);
+            if ($classPath) {
+                if((include($classPath)) && (class_exists($class) || interface_exists($class))) {
+                    zend_shm_cache_store($cacheKey, $classPath, 3600);
+                    return true;
+                }
             }
         }
 

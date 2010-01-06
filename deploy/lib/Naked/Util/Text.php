@@ -39,4 +39,52 @@ class Text
             // do something
         }
     }
+
+    /**
+     * Convert a camel case string into an underscored string
+     *
+     * @param string $text
+     * @return string
+     */
+    public static function camelCaseToUnderscores($string)
+    {
+        $withUnderscores = preg_replace('#([A-Z])#', '_$1', $string);
+        $lowercase = strtolower($withUnderscores);
+
+        return trim($lowercase, '_');
+    }
+
+    /**
+     * Convert an underscored string into a camel case string
+     *
+     * @param string $string
+     * @return string
+     */
+    public static function underscoresToCamelCase($string, $capitalizeStart=false)
+    {
+        $parts = explode('_', $string);
+
+        if ($capitalizeStart) {
+            $parts[0] = ucfirst($parts[0]);
+        } else {
+            $parts[0] = strtolower($parts[0]);
+        }
+
+        return implode('', $parts);
+    }
+
+    /**
+     * Convert a backslashed string into an underscored string
+     *
+     * @param string $text
+     * @return string
+     */
+    public static function backslashedToUnderscores($string)
+    {
+        $withUnderscores = str_replace('\\', '_', $string);
+        $lowercase = strtolower($withUnderscores);
+
+        return trim($lowercase, '_');
+    }
+
 }

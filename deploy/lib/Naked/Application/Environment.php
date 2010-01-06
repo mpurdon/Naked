@@ -46,7 +46,6 @@ class Environment
         $this->initIncludePath();
         $this->initLoader();
         $this->loadCoreFiles();
-        //$this->loadCoreFilesTarball();
     }
 
     /**
@@ -55,7 +54,7 @@ class Environment
     public function verifyInstall()
     {
         if (!getenv('ENVIRONMENT')) {
-            throw new RuntimeException('You must set up the ENVIRONMENT variable');
+            throw new \RuntimeException('You must set up the ENVIRONMENT variable');
         }
     }
 
@@ -147,7 +146,6 @@ class Environment
      */
     protected function initLoader()
     {
-        //echo "Initializing Auto-loading<br>";
         if (function_exists('zend_shm_cache_fetch')) {
             require_once 'Naked/Loader/Zend.php';
             Zend::registerAutoload();
@@ -167,6 +165,8 @@ class Environment
     {
         $coreFiles = array(
             'Naked\Application\Dispatcher.php',
+            'Naked\Log.php',
+            'Naked\UnitOfWork.php',
             'Naked\Controller.php',
             'Naked\Request.php',
             'Naked\Response.php',
@@ -178,69 +178,27 @@ class Environment
             'Naked\DI\Buildable.php',
             'Naked\DI\Specification.php',
             'Naked\DI\FactoryMethod.php',
-            'Naked\Annotations.php',
             'Naked\Annotations\Annotation.php',
+            'Naked\Annotations\ClassAnnotations.php',
             'Naked\Annotations\ReflectionClass.php',
-            'Naked\DI\ReflectionClass.php',
+            'Naked\Annotations\Builder.php',
+            'Naked\Annotations\Registry.php',
+            'Naked\Annotations.php',
             'Naked\Application.php',
             'Naked\Application\Configuration\Builder.php',
             'Naked\Application\Configuration.php',
             'Naked\Routing\Builder.php',
             'Naked\Routing\PathMatching.php',
             'Naked\Routing\Routes.php',
-            'Naked\Routing\BasicRoute.php'
+            'Naked\Routing\BasicRoute.php',
+            'Naked\Cache.php',
+            'Naked\Cache\Memcached.php',
+            'Naked\UnitOfWork.php',
+            'Naked\DomainModel.php'
         );
 
         foreach ($coreFiles as $file) {
             require_once $this->paths['lib'] . DIRECTORY_SEPARATOR . $file;
-        }
-    }
-
-    /**
-     * Load some core classes to avoid autoloading
-     */
-    protected function loadCoreFilesTarball()
-    {
-        $tarball = $this->paths['tmp'] . DIRECTORY_SEPARATOR . 'naked_tarball.php';
-
-        if (file_exists($tarball)) {
-            require_once($tarball);
-        } else {
-            $coreFiles = array(
-                'Naked\Routing\Builder.php',
-                'Naked\Application\Dispatcher.php',
-                'Naked\Controller.php',
-                'Naked\Request.php',
-                'Naked\Response.php',
-                'Naked\Template\Context.php',
-                'Naked\DI.php',
-                'Naked\DI\Registry.php',
-                'Naked\DI\Builder.php',
-                'Naked\DI\ConfigLoader.php',
-                'Naked\DI\Buildable.php',
-                'Naked\DI\Specification.php',
-                'Naked\DI\FactoryMethod.php',
-                'Naked\Annotations.php',
-                'Naked\Annotations\Annotation.php',
-                'Naked\Annotations\ReflectionClass.php',
-                'Naked\DI\ReflectionClass.php',
-                'Naked\Application.php',
-                'Naked\Application\Configuration\Builder.php',
-                'Naked\Application\Configuration.php',
-                'Naked\Routing\PathMatching.php',
-                'Naked\Routing\Routes.php',
-                'Naked\Routing\BasicRoute.php'
-            );
-
-            $contents = "<?php\n";
-
-            foreach ($coreFiles as $file) {
-                $sourceCode = file_get_contents($this->paths['lib'] . DIRECTORY_SEPARATOR . $file);
-                $contents .= substr($sourceCode, 5);
-                require_once $this->paths['lib'] . DIRECTORY_SEPARATOR . $file;
-            }
-
-            file_put_contents($tarball, $contents);
         }
     }
 
@@ -253,7 +211,6 @@ class Environment
     {
         if (is_null($this->modules)) {
             $this->modules = array();
-            //echo "Loading modules from {$this->paths['modules']}<br>";
             $directory = new \DirectoryIterator($this->paths['modules']);
 
             foreach ($directory as $file) {

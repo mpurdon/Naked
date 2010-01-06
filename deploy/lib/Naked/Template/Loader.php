@@ -23,6 +23,8 @@ class Loader
      */
     public static function getTemplate($templateFile)
     {
+        // @todo the template loader should look in a "core" location for templates first
+
         $parts = explode('/', $templateFile);
         $newParts = array(
             $parts[0],

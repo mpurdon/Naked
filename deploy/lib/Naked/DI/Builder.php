@@ -9,8 +9,8 @@
 
 namespace Naked\DI;
 
+use Naked;
 use Naked\DI;
-use Naked\DI\ReflectionClass;
 
 /**
  * Dependency Injection Builder
@@ -30,6 +30,32 @@ class Builder
      * @var array
      */
     protected $factories = array();
+
+    /**
+     * @var Naked\Annotations
+     */
+    protected $annotations;
+
+    /**
+     * @var Naked\Log
+     */
+    protected $logger;
+
+    /**
+     * Constructor
+     *
+     * @param Naked\Annotations $annotations
+     */
+    public function __construct($annotations)
+    {
+        $this->annotations = $annotations;
+        $this->logger = new \Naked\Log();
+    }
+
+    public function setLogger(Naked\Log $logger)
+    {
+        $this->logger = $logger;
+    }
 
     /**
      * Determine if we have the ability to build the service
@@ -103,7 +129,7 @@ class Builder
      */
     protected function getUsingSpecification($service, $context)
     {
-        //echo "Building a $service for the $context context<br>";
+        $this->logger->log("Building a $service for the $context context with a specification");
         $specification = $this->specifications[$service][$context];
 
         // We made be trying to load a one of a kind object
@@ -113,6 +139,7 @@ class Builder
             $className = $specification->class;
         }
 
+        $this->logger->log("The specification instructs us to build a $service as a $className");
         $instance = $this->getInstance($className, $context);
 
         if ($instance instanceof $className) {
@@ -122,7 +149,7 @@ class Builder
             return $instance;
         }
 
-        throw new RuntimeException("Could not create an instance of $className");
+        throw new \RuntimeException("Could not create an instance of $className");
     }
 
     /**
@@ -134,24 +161,39 @@ class Builder
      */
     protected function getInstance($className, $context)
     {
+        $this->logger->log("Getting an instance of class $className");
         $dependencies = $this->getDependencies($className);
         $parameters = array();
 
-        if (count($dependencies) > 0) {
+        // Figure out constructor injection dependencies
+        // @todo Due to the limitations of constructor injection, should I even bother with it?
+        if (isset($dependencies['constructor'])) {
+            $this->logger->log("Handling constructor injection for $className");
             $di = DI::container();
-            foreach ($dependencies as $dependency) {
-                //echo "Instantiating dependency $dependency<br>";
+            foreach ($dependencies['constructor'] as $dependency) {
+                $this->logger->log("Instantiating constructor dependency $dependency");
                 $parameters[] = $di->get($dependency, $context, true);
             }
 
             // We only use reflection when we need to pass in dependencies
+            $this->logger->log("Instantiating $className with parameters");
             $reflectionClass = new \Reflectionclass($className);
-
-            //echo "Instantiating $className with parameters:<pre>",var_dump($parameters),"</pre>";
-
+            // @todo What if we couldn't find the class we actually wanted to build?
             $instance = $reflectionClass->newInstanceArgs($parameters);
         } else {
             $instance = new $className();
+        }
+
+        // Figure out setter injection dependencies
+        if (isset($dependencies['setter'])) {
+            $this->logger->log("Handling setter injection for $className");
+            $di = DI::container();
+            foreach($dependencies['setter'] as $method => $dependency) {
+                $this->logger->log("Instantiating setter dependency $dependency for method $method");
+                $dependencyInstance = $di->get($dependency, $context, true);
+                $this->logger->log("Calling $method with instance: " . get_class($dependencyInstance));
+                $instance->$method($dependencyInstance);
+            }
         }
 
         return $instance;
@@ -165,6 +207,7 @@ class Builder
      */
     protected function getusingFactoryMethod($service, $context)
     {
+        $this->logger->log("Building a $service for the $context context with a factory");
         $factoryMethod = $this->factories[$service][$context]->factory;
         $instance = $factoryMethod();
 
@@ -175,7 +218,7 @@ class Builder
             return $instance;
         }
 
-        throw new RuntimeException("Could not create an instance of $service");
+        throw new \RuntimeException("Could not create an instance of $service");
     }
 
     /**
@@ -186,7 +229,7 @@ class Builder
      */
     public function getUsingSimpleInstantiation($className, $context)
     {
-        //echo "Instantiating!!!!<br>";
+        $this->logger->log("Simply Instantiating!!!");
         $instance = $this->getInstance($className, $context);
         return $instance;
     }
@@ -198,11 +241,17 @@ class Builder
      */
     protected function getDependencies($class)
     {
+        $this->logger->log("Getting dependencies for $class");
         $dependencies = array();
-        $reflectedClass = new ReflectionClass($class);
 
-        if ($reflectedClass->hasConstructorInjection()) {
-            $dependencies = $reflectedClass->getInjectionQueue();
+        $annotations = $this->annotations->forClass($class);
+
+        if ($annotations->hasConstructorInjection()) {
+            $dependencies['constructor'] = $annotations->getConstructorInjectionDependencies();
+        }
+
+        if ($annotations->hasSetterInjection()) {
+            $dependencies['setter'] = $annotations->getSetterInjectionDependencies();
         }
 
         return $dependencies;
@@ -217,8 +266,7 @@ class Builder
     protected function setProperties($instance, $specification)
     {
         foreach ($specification->properties as $property => $value) {
-            $method = 'set' . ucfirst($property);
-            $instance->$method($value);
+            $instance->$property = $value;
         }
     }
 

@@ -15,8 +15,8 @@ class ApplicationSuite extends PHPUnit_Framework_TestSuite
     public function __construct()
     {
         $this->setName('ApplicationSuite');
-        $this->addTestSuite('DispatcherTest');
         $this->addTestSuite('EnvironmentTest');
+        $this->addTestSuite('DispatcherTest');
     }
 
     /**

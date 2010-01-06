@@ -35,12 +35,37 @@ class Annotation
     {
         $this->type = $type;
 
-        if (is_array($parameters)) {
-            $this->parameters = $parameters;
-        } else {
-            $this->parameters = explode(' ', $parameters);
+        if (!is_array($parameters)) {
+            $parameters = explode(' ', $parameters);
+            $parameters = $this->parseParameters($parameters);
         }
+
+        $this->parameters = $parameters;
     }
+
+    /**
+     * Processes raw annotation parameters into an hash
+     *
+     * @param array $parameters
+     * @return $array
+     */
+    protected function parseParameters($parameters)
+    {
+        $finalParameters = array();
+
+        foreach ($parameters as $parameter) {
+            if (strpos($parameter, '=') === false) {
+                $finalParameters[$parameter] = true;
+                continue;
+            }
+
+            list($key, $value) = explode('=', $parameter);
+            $finalParameters[$key] = $value;
+        }
+
+        return $finalParameters;
+    }
+
 
     /**
      * Return the type of this annotation
@@ -50,6 +75,17 @@ class Annotation
     public function getType()
     {
         return $this->type;
+    }
+
+    /**
+     * Determine if this Annotation is a certain type
+     *
+     * @param string $type
+     * @return boolean
+     */
+    public function isA($type)
+    {
+        return strcasecmp($this->type,$type) === 0;
     }
 
     /**

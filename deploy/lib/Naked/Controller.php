@@ -62,6 +62,7 @@ class Controller
     public function directToTemplate($templateFile, $extraContext=array())
     {
         require_once 'Naked\Template.php';
+        require_once 'Naked\Template\Loader.php';
         require_once 'Naked\Template\Lexer.php';
         require_once 'Naked\Template\Parser.php';
         require_once 'Naked\Template\Node.php';

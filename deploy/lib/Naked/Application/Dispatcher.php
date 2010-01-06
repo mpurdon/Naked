@@ -59,13 +59,12 @@ class Dispatcher
         $actionMethod = $route->action . 'Action';
 
         try {
+            $this->startUp($request);
             $response = $controller->$actionMethod();
-            $this->hasDispatched = true;
+            $this->shutDown($response);
         } catch (RuntimeException $e) {
             echo "Caught an exception:<br>",$e->getMessage(),'<br>';
         }
-
-        echo $response;
     }
 
     /**
@@ -75,17 +74,10 @@ class Dispatcher
      */
     protected function getController($route)
     {
-        // We set up a build specification for the controller here so that we
-        // don't have to create a build spec for all controllers in the
-        // dependency configurations
-        $di = DI::container();
-        $controllerSpec = new Specification();
-        $controllerSpec->build('Controller')
-                       ->using($route->controller);
+        // We prepend the module to the class name because it's the namespace for it
+        $controllerClass = $route->module . '\\controllers\\' . $route->controller;
+        $controller = DI::container()->get($controllerClass);
 
-        $di->addBuildSpecification($controllerSpec);
-
-        $controller = $di->get($route->controller);
         return $controller;
     }
 
@@ -97,5 +89,35 @@ class Dispatcher
     public function hasDispatched()
     {
         return $this->hasDispatched;
+    }
+
+    /**
+     * Perform dispatch startup routines
+     */
+    protected function startUp($request)
+    {
+        // @todo all startup routines should be in plugins
+        $di = DI::container();
+
+        // Commit any changes the Unit of Work has tracked
+        $unitOfWork = $di->get('Naked\UnitOfWork');
+        $this->hasDispatched = false;
+    }
+
+    /**
+     * Perform dispatch shut down routines.
+     */
+    protected function shutDown($response)
+    {
+        // @todo All of this should be in plugins
+        $di = DI::container();
+
+        // Commit any changes the Unit of Work has tracked
+        $unitOfWork = $di->get('Naked\UnitOfWork');
+        $unitOfWork->commit();
+
+        $this->hasDispatched = true;
+
+        echo $response;
     }
 }
