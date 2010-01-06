@@ -1,0 +1,74 @@
+<table style="border-collapse:collapse;" border="1">
+    <thead>
+        <tr><th>Token Test</th><th>Result</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th>Pluralize</th>
+            <td>Found {{ num_things }} thing{{ num_things|pluralize }}</td>
+        </tr>
+        <tr>
+            <th rowspan="5">YesNo</th>
+        </tr>
+        <tr>
+            <td>A true value: {{ true_value|yesno:"yeah,no,maybe" }}</td>
+        </tr>
+        <tr>
+            <td>A false value: {{ false_value|yesno:"yeah,no,maybe" }}</td>
+        </tr>
+        <tr>
+            <td>An unknown value: {{ unknown_value|yesno:"yeah,no,maybe" }}</td>
+        </tr>
+        <tr>
+            <td>An unknown value with no third param: {{ unknown_value|yesno:"yeah,no" }}</td>
+        </tr>
+        <tr>
+            <th>Constant no filters</th>
+            <td>My name is {{ "MATTHEW CONSTANT" }}.</td>
+        </tr>
+        <tr>
+            <th>Constant lower filtered</th>
+            <td>My name is {{ "MATTHEW CONSTANT"|lower }}.</td>
+        </tr>
+        <tr>
+            <th>Constant upper filtered</th>
+            <td>My name is {{ "matthew constant"|upper }}.</td>
+        </tr>
+        <tr>
+            <th>Variable no filters</th>
+            <td>My name is {{ my_name }}.</td>
+        </tr>
+        <tr>
+            <th>Variable lower filtered</th>
+            <td>My name is {{ my_name|lower }}.</td>
+        </tr>
+        <tr>
+            <th>Variable without default</th>
+            <td>My name is {{ my_bad_name }}.</td>
+        </tr>
+        <tr>
+            <th>Variable with default</th>
+            <td>My name is {{ my_bad_name|default:"Matthew Default" }}.</td>
+        </tr>
+        <tr>
+            <th>Variable with default and lower filter</th>
+            <td>My name is {{ my_bad_name|default:"Matthew Default"|lower }}.</td>
+        </tr>
+        <tr>
+            <th>Is development based on environment</th>
+            <td>{{ is_development|yesno }}.</td>
+        </tr>
+        <tr>
+            <th>Locale from the configuration</th>
+            <td>{{ locale }}.</td>
+        </tr>
+        <tr>
+            <th>What kind of car did we build?</th>
+            <td>{{ spec_car }}</td>
+        </tr>
+        <tr>
+            <td colspan="2">Page built on {{ date }} at {{ time }}</td>
+        </tr>
+
+    </tbody>
+</table>
