@@ -6,7 +6,7 @@
  * @license http://www.opensource.org/licenses/mit-license.php Licensed under the MIT license
  * @version $Id$
  */
-namespace Naked;
+namespace Naked\Persistence;
 
 /**
  * Unit of Work pattern implementation

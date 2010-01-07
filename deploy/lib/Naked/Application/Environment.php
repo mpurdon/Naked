@@ -166,7 +166,6 @@ class Environment
         $coreFiles = array(
             'Naked\Application\Dispatcher.php',
             'Naked\Log.php',
-            'Naked\UnitOfWork.php',
             'Naked\Controller.php',
             'Naked\Request.php',
             'Naked\Response.php',
@@ -193,7 +192,8 @@ class Environment
             'Naked\Routing\BasicRoute.php',
             'Naked\Cache.php',
             'Naked\Cache\Memcached.php',
-            'Naked\UnitOfWork.php',
+            'Naked\Objects\Map.php',
+            'Naked\Persistence\UnitOfWork.php',
             'Naked\DomainModel.php'
         );
 

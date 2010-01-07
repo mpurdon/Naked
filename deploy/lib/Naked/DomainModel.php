@@ -27,7 +27,7 @@ abstract class DomainModel
     protected $id;
 
     /**
-     * @var \Naked\UnitOfWork
+     * @var \Naked\Persistence\UnitOfWork
      */
     protected $unitOfWork;
 
@@ -44,7 +44,7 @@ abstract class DomainModel
      * @Inject
      * @param \Naked\UnitOfWork $unitOfWork
      */
-    public function __construct(\Naked\UnitOfWork $unitOfWork)
+    public function __construct(\Naked\Persistence\UnitOfWork $unitOfWork)
     {
         $this->unitOfWork = $unitOfWork;
     }
