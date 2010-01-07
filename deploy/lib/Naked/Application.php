@@ -98,9 +98,11 @@ class Application
                 $dispatcher->dispatch(new NotFoundRoute(), $request);
             }
         } catch (\RuntimeException $e) {
-            echo 'Caught Run Time Exception: ',$e->getMessage(),'<pre>',var_dump($e->getTraceAsString()),'<pre>';
+            echo 'Application Caught Run Time Exception: ',$e->getMessage(),'<pre>',var_dump($e->getTraceAsString()),'<pre>';
         } catch (\Exception $e) {
-            echo 'Caught Exception: ',$e->getMessage(),'<pre>',var_dump($e->getTraceAsString()),'<pre>';
+            echo 'Application Caught Exception: ',$e->getMessage(),'<pre>',var_dump($e->getTraceAsString()),'<pre>';
         }
+
+        $di->get('Naked\Log')->flushMessages();
     }
 }

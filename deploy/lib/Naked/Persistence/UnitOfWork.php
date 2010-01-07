@@ -65,7 +65,7 @@ class UnitOfWork
             return false;
         }
         if ($object->id <= 0) {
-            throw new \RuntimeException('You can not register a dirty object with an invalid Id of "' . print_r($Object->ID, true) . '"');
+            throw new \RuntimeException('You can not register a dirty object with an invalid Id of "' . print_r($Object->id, true) . '"');
         }
         if (array_key_exists($object->id, $this->removedObjects)) {
             throw new \RuntimeException('You can not register a dirty object if it has already been marked as removed');

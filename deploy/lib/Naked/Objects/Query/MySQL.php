@@ -33,7 +33,7 @@ class MySQL extends Query
 
         $field = $this->map->getTableAlias() . '.' . $field;
 
-        echo "Getting {$criteria->comparitor} clause for $field<br>";
+        //echo "Getting {$criteria->comparitor} clause for $field<br>";
 
         switch ($criteria->comparitor) {
             case 'eq':

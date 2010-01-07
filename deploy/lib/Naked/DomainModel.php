@@ -199,7 +199,7 @@ abstract class DomainModel
     abstract public static function create($properties, $context='default');
 
     /**
-     * Get a mapper for this tpe of object
+     * Get a mapper for this type of object
      *
      * You can ovveride this method in child classes to load specialized mappers
      * for the model you are working with.

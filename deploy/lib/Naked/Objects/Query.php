@@ -42,7 +42,7 @@ abstract class Query
     {
         try {
             return $this->getQueryString();
-        // __toString is not allowed to throw exceptions
+        // __toString is not allowed to throw exceptions - I have no idea why
         } catch (\RuntimeException $e) {
             $query = '';
         }
@@ -95,9 +95,23 @@ abstract class Query
             $where .= implode(' AND ', $whereStrings);
         }
 
+        // We do this to get the correct object types when working with inheritance
+        if ($this->map->hasInheritance()) {
+            if (strpos($where, 'WHERE') === 0) {
+                $where .= " AND {$this->map->getTableAlias()}.domain_model_type = '{$this->map->getClassName()}'";
+            } else {
+                $where .= " WHERE {$this->map->getTableAlias()}.domain_model_type = '{$this->map->getClassName()}'" ;
+            }
+        }
+
         return $where;
     }
 
+    /**
+     * Get the ordering fragment for this query
+     *
+     * @return string
+     */
     protected function getOrdering()
     {
         $ordering = '';
@@ -149,7 +163,7 @@ abstract class Query
             'direction' => $matches['direction']
         );
 
-        echo "Added ordering of {$matches['property']} with direction {$matches['direction']}<br>";
+        //echo "Added ordering of {$matches['property']} with direction {$matches['direction']}<br>";
     }
 
     public function clearOrdering()
@@ -161,7 +175,7 @@ abstract class Query
     {
         $criteria = new Criteria($filter);
         $this->filters[] = $criteria;
-        echo "Added filter $criteria<br>";
+        //echo "Added filter $criteria<br>";
     }
 
     public function addExclusion($exclusion)

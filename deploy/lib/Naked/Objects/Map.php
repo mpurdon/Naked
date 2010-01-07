@@ -25,6 +25,7 @@ use Naked\Field;
 class Map
 {
     protected $className;
+    protected $superType;
     protected $tableName;
     protected $propertyMaps;
     protected $relationshipMaps;
@@ -39,8 +40,8 @@ class Map
     public function __construct($class, $annotations)
     {
         $this->className = $class;
-        $this->tableName = $this->normalize($this->className);
-        $this->tableAlias = $this->createTableAlias($this->tableName);
+        $this->determineSuperType();
+        $this->determineTableName();
         $this->propertyMaps = array();
         $this->relationshipMaps = array();
         $this->identityMap = null;
@@ -100,6 +101,56 @@ class Map
     }
 
     /**
+     * Figure out what the supertype of this class is so we can do single table inheritance.
+     */
+    protected function determineSuperType()
+    {
+        // @todo this mapping needs to be cached to get away from reflection
+        $superType = null;
+        //echo "Finding supertype for {$this->className}<br>";
+        $reflectedClass = new \ReflectionClass($this->className);
+
+        //$indent = '';
+
+        while ($reflectedClass = $reflectedClass->getParentClass()) {
+            //echo "$indent {$reflectedClass->getName()}<br>";
+            //$indent .= '_';
+            if ($reflectedClass->getName() == 'Naked\DomainModel') {
+                break;
+            }
+
+            $superType = $reflectedClass->getName();
+        }
+
+        //echo "Super type was $superType<br>";
+        $this->superType = $superType;
+    }
+
+    /**
+     * Determine if this Map is representing an object that has a parent
+     *
+     * @return boolean
+     */
+    public function hasInheritance()
+    {
+        return !is_null($this->superType);
+    }
+
+    /**
+     * Based on the supertype and class name, figure out the table for this mapping
+     */
+    protected function determineTableName()
+    {
+        if ($this->hasInheritance()) {
+            $this->tableName = $this->normalize($this->superType);
+        } else {
+            $this->tableName = $this->normalize($this->className);
+        }
+
+        $this->tableAlias = $this->createTableAlias($this->tableName);
+    }
+
+    /**
      * Given a property annotation, get the proper field object
      *
      * @param Naked\Annotations\Annotation $annotation
@@ -132,7 +183,7 @@ class Map
     public function addProperty($propertyName, $property)
     {
         if (! $property instanceof \Naked\Field) {
-            echo $propertyName,' is not a field ',var_dump($property),'<br>';
+            //echo $propertyName,' is not a field ',var_dump($property),'<br>';
             return;
         }
 
@@ -140,11 +191,11 @@ class Map
         $propertyMap = array_merge($propertyMap, $property->getSpecification());
         $this->fieldList[] = $propertyMap['field'];
         if ($property instanceof \Naked\Field\Id) {
-            echo 'Adding Identity for ',$this->className,'<br>';
+            //echo 'Adding Identity for ',$this->className,'<br>';
             $this->identityMap = $propertyMap;
         }
 
-        echo 'Adding property ',$propertyName,' for ',$this->className,'<br>';
+        //echo 'Adding property ',$propertyName,' for ',$this->className,'<br>';
         $this->propertyMaps[$propertyName] = $propertyMap;
         return $this;
     }

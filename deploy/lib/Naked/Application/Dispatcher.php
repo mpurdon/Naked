@@ -100,7 +100,7 @@ class Dispatcher
         $di = DI::container();
 
         // Commit any changes the Unit of Work has tracked
-        $unitOfWork = $di->get('Naked\UnitOfWork');
+        $unitOfWork = $di->get('Naked\Persistence\UnitOfWork');
         $this->hasDispatched = false;
     }
 
@@ -113,7 +113,7 @@ class Dispatcher
         $di = DI::container();
 
         // Commit any changes the Unit of Work has tracked
-        $unitOfWork = $di->get('Naked\UnitOfWork');
+        $unitOfWork = $di->get('Naked\Persistence\UnitOfWork');
         $unitOfWork->commit();
 
         $this->hasDispatched = true;
