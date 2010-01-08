@@ -103,6 +103,6 @@ class Application
             echo 'Application Caught Exception: ',$e->getMessage(),'<pre>',var_dump($e->getTraceAsString()),'<pre>';
         }
 
-        $di->get('Naked\Log')->flushMessages();
+        $di->get('Naked\Log')->flushLastMessage();
     }
 }

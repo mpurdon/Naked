@@ -84,7 +84,7 @@ class Log
     /**
      * Send the last message to the writers
      */
-    protected function flushLastMessage()
+    public function flushLastMessage()
     {
         if (!isset($this->messages[$this->lastMessage])) {
             return false;
