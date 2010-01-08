@@ -30,7 +30,7 @@ abstract class Car extends DomainModel
 
     /**
      * @var Driver
-     * @Field \Naked\Field\ForeignKey class=\Naked\Car\Driver
+     * @Field \Naked\Field\ForeignKey class=index\models\Driver
      */
     protected $driver;
 
